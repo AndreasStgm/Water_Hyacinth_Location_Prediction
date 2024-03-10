@@ -1,81 +1,126 @@
 <template>
-  <div id="logo">
-    <img src="../assets/logoCBC.jpg" height="300" alt="CBC logo"/>
-  </div>
-  <div id="right">
-    <article id="buttonsTop">
-      <button class="dayButtons">
-        <RouterLink to="/hartbeespoortDam" class="routerLink">TODAY</RouterLink>
-      </button>
-      <button class="dayButtons">
-        <RouterLink to="/hartbeespoortDam" class="routerLink">+ 1 DAY</RouterLink>
-      </button>
-      <button class="dayButtons">
-        <RouterLink to="/hartbeespoortDam" class="routerLink">+2 DAYS</RouterLink>
-      </button>
+  <section class="top">
+    <article class="left">
+      <img src="../assets/logoCBC.jpg" alt="CBC logo"/>
     </article>
-    <article id="contentMap">
-      <p id="date">03/03/2024</p>
-      <img id="map" src="../assets/googleview.png" alt="GoogleMaps Map of Dam" width=100%/>
-      <p id="accuracy">Accuracy: 83% </p>
-      <button @click="$router.go(-1)" class="backButton">Back</button>
+    <article class="right">
+      <section class="buttonsTop">
+        <button>
+          <RouterLink to="/hartbeespoortDam" class="routerLink">TODAY</RouterLink>
+        </button>
+        <button class="dayButtons">
+          <RouterLink to="/hartbeespoortDam" class="routerLink">+ 1 DAY</RouterLink>
+        </button>
+        <button class="dayButtons">
+          <RouterLink to="/hartbeespoortDam" class="routerLink">+2 DAYS</RouterLink>
+        </button>
+        <p class="date">{{ formatDate(myDate) }}</p>
+      </section>
     </article>
-  </div>
+  </section>
+
+  <section class="under">
+    <iframe class="map-iframe" style="border:0" loading="lazy" allowfullscreen
+            src="https://www.google.com/maps/embed/v1/view?zoom=14&center=-25.7500,27.8533&key=AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo"></iframe>
+    <p id="accuracy">Accuracy: {{ getAccuracy() }}% </p>
+    <button @click="$router.go(-1)">Back</button>
+  </section>
 </template>
 
 <script>
+export default {
+  data() {
+    return {
+      myDate: new Date(),
+      accuracy: null,
+    };
+  },
+  methods: {
+    formatDate(date) {
+      let day = date.getDate().toString().padStart(2, '0');
+      let month = (date.getMonth() + 1).toString().padStart(2, '0');
+      let year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    },
+    getAccuracy() {
+      this.accuracy = 88;
+      return this.accuracy;
+    }
+  }
+};
 
 </script>
 
 <style scoped>
-body {
-  position: relative;
+.top {
+  margin: 10px;
+  height: 20vh;
+  overflow: hidden;
+  display: flex;
 }
 
-#logo {
-  float: left;
-  width: 30%;
+.left {
+  flex: 0 0 20%;
   text-align: center;
 }
 
-#logo img {
-  margin-top: 50px;
+.left img {
+  max-width: 100%;
+  max-height: 100%;
 }
 
-#right {
-  font-size: 30px;
-  margin-top: 210px;
-  padding-right: 2%;
-  width: 70%;
+.right {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex: 1;
+}
+
+.date {
   float: right;
-}
-
-#right p {
-  text-align: right;
+  margin-left: 10px;
   padding: 10px 0;
 }
 
+.buttonsTop {
+  margin-bottom: 10px;
+}
 
-.dayButtons {
-  font-size: 30px;
-  padding: 10px 30px;
+.buttonsTop button {
+  padding: 10px 20px;
+  margin-left: 5px;
   background-color: #707330;
-  margin-left: 10px;
 }
 
-.routerLink {
-  text-decoration: none;
-  color: white;
+.under {
+  width: 80%;
+  margin: 10px auto;
 }
 
-.backButton {
+.map-iframe {
+  display: block;
+  width: 100%;
+  height: 70vh;
+}
+
+.under p {
+  display: block;
+  margin-top: 5px;
   float: right;
-  font-size: 30px;
+}
+
+.under button {
+  clear: right;
+  float: right;
   background-color: #707330;
   color: white;
   margin: 10px;
-  padding: 10px 30px;
+  padding: 10px 20px;
 }
 
+a {
+  text-decoration: none;
+  color: white;
+}
 
 </style>
