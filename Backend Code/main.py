@@ -6,7 +6,9 @@ from cv2.typing import MatLike
 
 
 DEBUG: bool = True
-TEST_IMAGE: str = "test_images/20240330_Sentinel1_Hartbeespoort.png"
+TEST_IMAGE: str = "test_images/20240329_Sentinel2_Hartbeespoort.png"
+KERNEL_SIZE: int = 3
+EROSION_DILATION_ITR: int = 1
 
 
 def main() -> None:
@@ -21,22 +23,34 @@ def main() -> None:
     # Perfect green and blue have a hue of 120 and 240 respectively
     # OpenCV HSV maximum hue value is 360/2, so perfects are 60 and 120 respectively
     # https://docs.opencv.org/4.x/da/d97/tutorial_threshold_inRange.html
+    hsv_image: MatLike = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     # Threshold values were obtained emperically
     # These thresholds are ideal for the Sentinel2 optical image
-    lower_green: np.ndarray = np.array([55, 50, 128])  # Value is set to 50%, because the BGR value of the green surface is 0, 128, 0
-    upper_green: np.ndarray = np.array([65, 255, 128])  # With a max value of 256, 128 is exactly this 50%
+    # lower_green: np.ndarray = np.array([55, 50, 128])  # Value is set to 50%, because the BGR value of the green surface is 0, 128, 0
+    # upper_green: np.ndarray = np.array([65, 255, 128])  # With a max value of 256, 128 is exactly this 50%
 
     # These thresholds are ideal for the Sentinel1 radar image
-    lower_green: np.ndarray = np.array([55, 50, 50])  # Value is set to be within 20% and 100%
-    upper_green: np.ndarray = np.array([65, 255, 255])
+    # lower_green: np.ndarray = np.array([55, 50, 50])  # Value is set to be within 20% and 100%
+    # upper_green: np.ndarray = np.array([65, 255, 255])
 
-    hsv_image: MatLike = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # These thresholds are a middle ground to have a decent enough detection with both satellites
+    lower_green: np.ndarray = np.array([55, 50, 100])  # Value is set to be within 40% and 80%
+    upper_green: np.ndarray = np.array([65, 255, 200])
 
     mask_green: MatLike = cv2.inRange(hsv_image, lower_green, upper_green)
 
     if DEBUG:
         cv2.imshow(f"{TEST_IMAGE} - Green Mask", mask_green)
+        cv2.waitKey(0)
+
+    # Eroding and dilating the image to clear noise
+    kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
+    eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
+    dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
+
+    if DEBUG:
+        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
         cv2.waitKey(0)
 
     # Detecting the blob of the lake
