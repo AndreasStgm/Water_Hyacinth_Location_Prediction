@@ -6,7 +6,7 @@ from cv2.typing import MatLike
 
 
 DEBUG: bool = True
-TEST_IMAGE: str = "test_images/20240329_Sentinel2_Hartbeespoort.png"
+TEST_IMAGE: str = "test_images/20240223_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
 
@@ -19,11 +19,18 @@ def main() -> None:
         cv2.imshow(f"{TEST_IMAGE} - Full Res", image)
         cv2.waitKey(0)
 
+    # Blurring the image to try reduce noise
+    smoothed_image: MatLike = cv2.GaussianBlur(image, (KERNEL_SIZE, KERNEL_SIZE), 0)
+
+    if DEBUG:
+        cv2.imshow(f"{TEST_IMAGE} - Smoothed", smoothed_image)
+        cv2.waitKey(0)
+
     # Detecting and green of the lake
     # Perfect green and blue have a hue of 120 and 240 respectively
     # OpenCV HSV maximum hue value is 360/2, so perfects are 60 and 120 respectively
     # https://docs.opencv.org/4.x/da/d97/tutorial_threshold_inRange.html
-    hsv_image: MatLike = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    hsv_image: MatLike = cv2.cvtColor(smoothed_image, cv2.COLOR_BGR2HSV)
 
     # Threshold values were obtained emperically
     # These thresholds are ideal for the Sentinel2 optical image
@@ -45,13 +52,13 @@ def main() -> None:
         cv2.waitKey(0)
 
     # Eroding and dilating the image to clear noise
-    kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
-    eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
-    dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
+    # kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
+    # eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
+    # dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
 
-    if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
-        cv2.waitKey(0)
+    # if DEBUG:
+    #     cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
+    #     cv2.waitKey(0)
 
     # Detecting the blob of the lake
     # detector: cv2.SimpleBlobDetector = cv2.SimpleBlobDetector().create()
