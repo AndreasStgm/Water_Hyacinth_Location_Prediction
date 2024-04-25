@@ -6,7 +6,7 @@ from cv2.typing import MatLike
 
 
 DEBUG: bool = True
-TEST_IMAGE: str = "test_images/20240223_Sentinel2_Hartbeespoort.png"
+TEST_IMAGE: str = "test_images//Sentinel2/20230104_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
 
@@ -52,13 +52,13 @@ def main() -> None:
         cv2.waitKey(0)
 
     # Eroding and dilating the image to clear noise
-    # kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
-    # eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
-    # dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
+    kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
+    eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
+    dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
 
-    # if DEBUG:
-    #     cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
-    #     cv2.waitKey(0)
+    if DEBUG:
+        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
+        cv2.waitKey(0)
 
     # Detecting the blob of the lake
     # detector: cv2.SimpleBlobDetector = cv2.SimpleBlobDetector().create()
