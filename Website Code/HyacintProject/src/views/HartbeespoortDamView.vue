@@ -5,15 +5,21 @@
     </article>
     <article class="right">
       <section class="buttonsTop">
+      <p>
         <button>
           <RouterLink to="/hartbeespoortDam" class="routerLink">TODAY</RouterLink>
         </button>
+      </p>
+      <p>
         <button class="dayButtons">
-          <RouterLink to="/hartbeespoortDam" class="routerLink">+ 1 DAY</RouterLink>
+          <RouterLink to="/hartbeespoortDam" class="routerLink">+1 DAY</RouterLink>
         </button>
+      </p>
+      <p>
         <button class="dayButtons">
           <RouterLink to="/hartbeespoortDam" class="routerLink">+2 DAYS</RouterLink>
         </button>
+      </p>
         <p class="date">{{ formatDate(myDate) }}</p>
       </section>
     </article>
@@ -53,15 +59,15 @@ export default {
 
 <style scoped>
 .top {
-  margin: 10px;
-  height: 20vh;
+  margin: 10px auto;
+  width: 80%;
+  height: 190px;
   overflow: hidden;
   display: flex;
 }
 
 .left {
-  flex: 0 0 20%;
-  text-align: center;
+  text-align: left;
 }
 
 .left img {
@@ -74,6 +80,7 @@ export default {
   justify-content: space-between;
   align-items: flex-end;
   flex: 1;
+  margin-left: 15px;
 }
 
 .date {
@@ -82,13 +89,10 @@ export default {
   padding: 10px 0;
 }
 
-.buttonsTop {
-  margin-bottom: 10px;
-}
-
 .buttonsTop button {
   padding: 10px 20px;
-  margin-left: 5px;
+  margin: 3px 5px;
+  width: 100px;
   background-color: #707330;
 }
 
@@ -105,7 +109,7 @@ export default {
 
 .under p {
   display: block;
-  margin-top: 5px;
+  margin-top: 10px;
   float: right;
 }
 
@@ -113,7 +117,6 @@ export default {
   clear: right;
   float: right;
   background-color: #707330;
-  color: white;
   margin: 10px;
   padding: 10px 20px;
 }
@@ -121,6 +124,18 @@ export default {
 a {
   text-decoration: none;
   color: white;
+  font-family:Arial, Helvetica, sans-serif;
+}
+
+button {
+  text-decoration: none;
+  color: white;
+  font-family:Arial, Helvetica, sans-serif;
+  text-shadow: -1px -1px 0 #979e4e, 1px -1px 0 #979e4e, -1px 1px 0 #979e4e, 1px 1px 0 #979e4e;
+}
+
+.map-iframe {
+  outline-style: solid;
 }
 
 </style>
