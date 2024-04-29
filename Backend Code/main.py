@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
 
-# from typing import Sequence
 from cv2.typing import MatLike
 
 
 DEBUG: bool = True
-TEST_IMAGE: str = "test_images//Sentinel2/20230104_Sentinel2_Hartbeespoort.png"
+TEST_IMAGE: str = "training_data/Sentinel2/20230104_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
 
@@ -34,16 +33,16 @@ def main() -> None:
 
     # Threshold values were obtained emperically
     # These thresholds are ideal for the Sentinel2 optical image
-    # lower_green: np.ndarray = np.array([55, 50, 128])  # Value is set to 50%, because the BGR value of the green surface is 0, 128, 0
-    # upper_green: np.ndarray = np.array([65, 255, 128])  # With a max value of 256, 128 is exactly this 50%
+    lower_green: np.ndarray = np.array([55, 50, 112])  # Value is set to around 50%, because the BGR value of the green surface is 0, 128, 0
+    upper_green: np.ndarray = np.array([65, 255, 144])  # With a max value of 256, 128 is exactly this 50%
 
     # These thresholds are ideal for the Sentinel1 radar image
     # lower_green: np.ndarray = np.array([55, 50, 50])  # Value is set to be within 20% and 100%
     # upper_green: np.ndarray = np.array([65, 255, 255])
 
     # These thresholds are a middle ground to have a decent enough detection with both satellites
-    lower_green: np.ndarray = np.array([55, 50, 100])  # Value is set to be within 40% and 80%
-    upper_green: np.ndarray = np.array([65, 255, 200])
+    # lower_green: np.ndarray = np.array([55, 50, 100])  # Value is set to be within 40% and 80%
+    # upper_green: np.ndarray = np.array([65, 255, 200])
 
     mask_green: MatLike = cv2.inRange(hsv_image, lower_green, upper_green)
 
@@ -53,21 +52,31 @@ def main() -> None:
 
     # Eroding and dilating the image to clear noise
     kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
-    eroded_image: MatLike = cv2.erode(mask_green, kernel, iterations=EROSION_DILATION_ITR)
-    dilated_image: MatLike = cv2.dilate(eroded_image, kernel, iterations=EROSION_DILATION_ITR)
+    noise_cleared_image: MatLike = cv2.dilate(
+        cv2.erode(
+            mask_green,
+            kernel,
+            iterations=EROSION_DILATION_ITR),
+        kernel,
+        iterations=EROSION_DILATION_ITR)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", dilated_image)
+        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", noise_cleared_image)
         cv2.waitKey(0)
 
-    # Detecting the blob of the lake
-    # detector: cv2.SimpleBlobDetector = cv2.SimpleBlobDetector().create()
-    # keypoints: Sequence[cv2.KeyPoint] = detector.detect(image)
-    # keypoint_image: MatLike = cv2.drawKeypoints(image, keypoints, np.array([]), (0, 0, 255), cv2.DrawMatchesFlags_DRAW_RICH_KEYPOINTS)
+    # Dilating and eroding to fill gaps
+    kernel: np.ndarray = np.ones((KERNEL_SIZE, KERNEL_SIZE), np.uint8)
+    gap_filled_image: MatLike = cv2.erode(
+        cv2.dilate(
+            noise_cleared_image,
+            kernel,
+            iterations=EROSION_DILATION_ITR),
+        kernel,
+        iterations=EROSION_DILATION_ITR)
 
-    # if DEBUG:
-    #     cv2.imshow(f"{TEST_IMAGE} - Blob Detection", keypoint_image)
-    #     cv2.waitKey(0)
+    if DEBUG:
+        cv2.imshow(f"{TEST_IMAGE} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
+        cv2.waitKey(0)
 
 
 if __name__ == "__main__":
