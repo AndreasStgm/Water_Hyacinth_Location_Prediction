@@ -10,3 +10,4 @@ weather_raw = weather_raw.drop(["name", "tempmax", "tempmin", "temp", "feelslike
                                 "conditions", "description", "icon", "stations"], axis=1)
 
 weather_raw.to_csv("./training_data/processed_data/preprocessed_weather_hartbeespoort.csv")
+weather_raw.to_feather("./training_data/processed_data/preprocessed_weather_hartbeespoort.feather")
