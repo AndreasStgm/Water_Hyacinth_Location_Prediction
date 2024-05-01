@@ -80,6 +80,8 @@ def main() -> None:
         cv2.imshow(f"{TEST_IMAGE} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
         cv2.waitKey(0)
 
+    # Detecting the contours of the shapes in the image
+    # https://www.geeksforgeeks.org/how-to-detect-shapes-in-images-in-python-using-opencv/
     contours_return: tuple[Sequence[MatLike], MatLike] = cv2.findContours(gap_filled_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours: Sequence[MatLike] = contours_return[0]
     i: int = 0
