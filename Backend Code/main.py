@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pandas as pd
 
 from cv2.typing import MatLike
 
@@ -77,6 +78,15 @@ def main() -> None:
     if DEBUG:
         cv2.imshow(f"{TEST_IMAGE} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
         cv2.waitKey(0)
+
+    white_pixel_coords: np.ndarray = np.argwhere(gap_filled_image != 0)
+
+    structured_format: pd.DataFrame = pd.DataFrame([(y, x) for (x, y) in white_pixel_coords])
+    structured_format = structured_format.rename(columns={0: "x_coord", 1: "y_coord"})
+    structured_format.to_csv("./training_data/test.csv")
+
+    if DEBUG:
+        print(structured_format)
 
 
 if __name__ == "__main__":
