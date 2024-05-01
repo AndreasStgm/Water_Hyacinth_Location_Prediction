@@ -9,4 +9,4 @@ weather_raw = weather_raw.drop(["name", "tempmax", "tempmin", "temp", "feelslike
                                 "visibility", "solarradiation", "solarenergy", "uvindex", "severerisk", "sunrise", "sunset", "moonphase",
                                 "conditions", "description", "icon", "stations"], axis=1)
 
-weather_raw.to_csv("./training_data/weather_hartbeespoort_preprocessed.csv")
+weather_raw.to_csv("./training_data/processed_data/preprocessed_weather_hartbeespoort.csv")
