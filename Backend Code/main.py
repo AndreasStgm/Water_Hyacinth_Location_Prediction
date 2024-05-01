@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from cv2.typing import MatLike
+from typing import Sequence
 
 
 DEBUG: bool = True
@@ -79,14 +80,36 @@ def main() -> None:
         cv2.imshow(f"{TEST_IMAGE} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
         cv2.waitKey(0)
 
-    white_pixel_coords: np.ndarray = np.argwhere(gap_filled_image != 0)
+    contours_return: tuple[Sequence[MatLike], MatLike] = cv2.findContours(gap_filled_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours: Sequence[MatLike] = contours_return[0]
+    i: int = 0
+    for contour in contours:
+        # here we are ignoring first counter because
+        # findcontour function detects whole image as shape
+        if i == 0:
+            i = 1
+            continue
 
-    structured_format: pd.DataFrame = pd.DataFrame([(y, x) for (x, y) in white_pixel_coords])
-    structured_format = structured_format.rename(columns={0: "x_coord", 1: "y_coord"})
-    structured_format.to_csv("./training_data/test.csv")
+        cv2.drawContours(image, [contour], 0, (0, 0, 255), 2)
+
+        # finding center point of shape
+        M: dict[str, float] = cv2.moments(contour)
+        if M['m00'] != 0:
+            x = int(M['m10']/M['m00'])
+            y = int(M['m01']/M['m00'])
+
+            cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
     if DEBUG:
-        print(structured_format)
+        cv2.imshow(f"{TEST_IMAGE} Original Image - Contours Drawn", image)
+        cv2.waitKey(0)
+
+# white_pixel_coords: np.ndarray = np.argwhere(gap_filled_image != 0)
+# structured_format: pd.DataFrame = pd.DataFrame([(y, x) for (x, y) in white_pixel_coords])
+# structured_format = structured_format.rename(columns={0: "x_coord", 1: "y_coord"})
+# structured_format.to_csv("./training_data/test.csv")
+# if DEBUG:
+#     print(structured_format)
 
 
 if __name__ == "__main__":
