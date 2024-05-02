@@ -7,7 +7,7 @@ from typing import Sequence
 
 
 DEBUG: bool = True
-TEST_IMAGE: str = "training_data/Sentinel2/20230104_Sentinel2_Hartbeespoort.png"
+TEST_IMAGE: str = "training_data/Sentinel2/20230116_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
 LARGEST_BLOBS_TRACKED: int = 3
@@ -88,17 +88,21 @@ def main() -> None:
     contours.sort(key=lambda item: cv2.contourArea(item), reverse=True)
 
     # Draw the x amount largest contours, these are the ones we are going to keep track of
-    for i in range(LARGEST_BLOBS_TRACKED):
-
-        cv2.drawContours(image, [contours[i]], 0, (0, 0, 255), 2)
-
+    needed_contours: int = LARGEST_BLOBS_TRACKED
+    i: int = 0
+    while needed_contours > 0:
         # Finding center point of the shape
         M: dict[str, float] = cv2.moments(contours[i])
         if M['m00'] != 0:
             x = int(M['m10']/M['m00'])
             y = int(M['m01']/M['m00'])
 
-            cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+            # Check if the contours is surrounding an area of plant mass or not (if plant mass pixel value will be 255)
+            if gap_filled_image[y, x] != 0:
+                cv2.drawContours(image, [contours[i]], 0, (0, 0, 255), 2)
+                cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                needed_contours -= 1
+        i += 1
 
     if DEBUG:
         cv2.imshow(f"{TEST_IMAGE} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
