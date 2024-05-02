@@ -6,7 +6,7 @@ from cv2.typing import MatLike
 from typing import Sequence
 
 
-DEBUG: bool = True
+DEBUG: bool = False
 TEST_IMAGE: str = "training_data/Sentinel2/20230116_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
@@ -88,8 +88,9 @@ def main() -> None:
     contours.sort(key=lambda item: cv2.contourArea(item), reverse=True)
 
     # Draw the x amount largest contours, these are the ones we are going to keep track of
-    needed_contours: int = LARGEST_BLOBS_TRACKED
     i: int = 0
+    needed_contours: int = LARGEST_BLOBS_TRACKED
+    resulting_contours: pd.DataFrame = pd.DataFrame(columns=["center_x", "center_y", "contour"])
     while needed_contours > 0:
         # Finding center point of the shape
         M: dict[str, float] = cv2.moments(contours[i])
@@ -101,12 +102,16 @@ def main() -> None:
             if gap_filled_image[y, x] != 0:
                 cv2.drawContours(image, [contours[i]], 0, (0, 0, 255), 2)
                 cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+
+                resulting_contours.loc[len(resulting_contours.index)] = [x, y, contours[i]]
                 needed_contours -= 1
         i += 1
 
     if DEBUG:
         cv2.imshow(f"{TEST_IMAGE} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
         cv2.waitKey(0)
+
+    print(resulting_contours)
 
 
 if __name__ == "__main__":
