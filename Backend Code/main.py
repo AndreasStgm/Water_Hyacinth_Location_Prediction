@@ -10,6 +10,7 @@ DEBUG: bool = True
 TEST_IMAGE: str = "training_data/Sentinel2/20230104_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
+LARGEST_BLOBS_TRACKED: int = 3
 
 
 def main() -> None:
@@ -81,21 +82,18 @@ def main() -> None:
         cv2.waitKey(0)
 
     # Detecting the contours of the shapes in the image
-    # https://www.geeksforgeeks.org/how-to-detect-shapes-in-images-in-python-using-opencv/
+    # https://docs.opencv.org/4.x/dd/d49/tutorial_py_contour_features.html
     contours_return: tuple[Sequence[MatLike], MatLike] = cv2.findContours(gap_filled_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contours: Sequence[MatLike] = contours_return[0]
-    i: int = 0
-    for contour in contours:
-        # here we are ignoring first counter because
-        # findcontour function detects whole image as shape
-        if i == 0:
-            i = 1
-            continue
+    contours: list[MatLike] = list(contours_return[0])
+    contours.sort(key=lambda item: cv2.contourArea(item), reverse=True)
 
-        cv2.drawContours(image, [contour], 0, (0, 0, 255), 2)
+    # Draw the x amount largest contours, these are the ones we are going to keep track of
+    for i in range(LARGEST_BLOBS_TRACKED):
 
-        # finding center point of shape
-        M: dict[str, float] = cv2.moments(contour)
+        cv2.drawContours(image, [contours[i]], 0, (0, 0, 255), 2)
+
+        # Finding center point of the shape
+        M: dict[str, float] = cv2.moments(contours[i])
         if M['m00'] != 0:
             x = int(M['m10']/M['m00'])
             y = int(M['m01']/M['m00'])
@@ -103,15 +101,8 @@ def main() -> None:
             cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} Original Image - Contours Drawn", image)
+        cv2.imshow(f"{TEST_IMAGE} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
         cv2.waitKey(0)
-
-# white_pixel_coords: np.ndarray = np.argwhere(gap_filled_image != 0)
-# structured_format: pd.DataFrame = pd.DataFrame([(y, x) for (x, y) in white_pixel_coords])
-# structured_format = structured_format.rename(columns={0: "x_coord", 1: "y_coord"})
-# structured_format.to_csv("./training_data/test.csv")
-# if DEBUG:
-#     print(structured_format)
 
 
 if __name__ == "__main__":
