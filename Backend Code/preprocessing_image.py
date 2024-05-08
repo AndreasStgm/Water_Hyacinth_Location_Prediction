@@ -6,7 +6,7 @@ from cv2.typing import MatLike
 from typing import Sequence
 
 
-DEBUG: bool = False
+DEBUG: bool = True
 TEST_IMAGE: str = "training_data/Sentinel2/20230116_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
@@ -89,9 +89,9 @@ def main() -> None:
 
     # Draw the x amount largest contours, these are the ones we are going to keep track of
     i: int = 0
-    needed_contours: int = LARGEST_BLOBS_TRACKED
-    resulting_contours: pd.DataFrame = pd.DataFrame(columns=["center_x", "center_y", "contour"])
-    while needed_contours > 0:
+    needed_shapes: int = LARGEST_BLOBS_TRACKED
+    resulting_ellipses: pd.DataFrame = pd.DataFrame(columns=["center_x", "center_y", "x_axis_length", "y_axis_length", "angle"])
+    while needed_shapes > 0:
         # Finding center point of the shape
         M: dict[str, float] = cv2.moments(contours[i])
         if M['m00'] != 0:
@@ -101,17 +101,22 @@ def main() -> None:
             # Check if the contours is surrounding an area of plant mass or not (if plant mass pixel value will be 255)
             if gap_filled_image[y, x] != 0:
                 cv2.drawContours(image, [contours[i]], 0, (0, 0, 255), 2)
-                cv2.putText(image, f"Center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                cv2.putText(image, f"Contour_center ({x},{y})", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
-                resulting_contours.loc[len(resulting_contours.index)] = [x, y, contours[i]]
-                needed_contours -= 1
+                ellipse: tuple[Sequence[float], Sequence[int], float] = cv2.fitEllipse(contours[i])
+                cv2.ellipse(image, ellipse, (0, 255, 0), 2)
+                cv2.putText(image, f"Ellipse_center ({int(ellipse[0][0])},{int(ellipse[0][1])})",
+                            (int(ellipse[0][0]), int(ellipse[0][1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+                resulting_ellipses.loc[len(resulting_ellipses.index)] = [ellipse[0][0], ellipse[0][1], ellipse[1][0], ellipse[1][1], ellipse[2]]
+                needed_shapes -= 1
         i += 1
 
     if DEBUG:
         cv2.imshow(f"{TEST_IMAGE} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
         cv2.waitKey(0)
 
-    print(resulting_contours)
+    resulting_ellipses.to_csv("training_data/processed_data/test.csv")
 
 
 if __name__ == "__main__":
