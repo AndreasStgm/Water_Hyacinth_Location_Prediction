@@ -139,7 +139,7 @@ def main() -> None:
             single_row_df.insert(new_column_index, f"{resulting_ellipses.columns[column_index]}_{record_index}", [column], True)
             column_index += 1
             new_column_index += 1
-    record_index += 1
+        record_index += 1
 
     single_row_df.to_csv("training_data/processed_data/preprocessed_image_test.csv", index=False)
 
