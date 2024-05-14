@@ -20,13 +20,11 @@ def main() -> None:
 
     # Create a new dataframe with the structure fo the first image
     images_df: pd.DataFrame = preproc_img.convert_image_to_dataframe_row(images[0])
-    print(images_df)
     for i in range(1, len(images)):
-        # print(preproc_img.convert_image_to_dataframe_row(images[i]))
-        # .to_csv(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.csv", index=False)
-        images_df.loc[len(images_df.index)] = preproc_img.convert_image_to_dataframe_row(images[i])
+        images_df = pd.concat([images_df, preproc_img.convert_image_to_dataframe_row(images[i])])
 
-    print(images_df)
+    images_df.to_csv(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.csv", index=False)
+    images_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
 
 
 if __name__ == "__main__":
