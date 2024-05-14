@@ -5,10 +5,11 @@ import pandas as pd
 
 PATH_TO_IMAGES: str = "./training_data/Sentinel2"
 PATH_TO_PROCESSED_DATA: str = "./training_data/processed_data"
-TEST_IMAGE: str = "./training_data/Sentinel2/20230116_Sentinel2_Hartbeespoort.png"
+
+PREPROCESS: bool = True
 
 
-def main() -> None:
+def gather_data_and_preprocess() -> tuple[pd.DataFrame, pd.DataFrame]:
     # First we drop all unneeded columns from the weather data
     weather_df: pd.DataFrame = preproc_wthr.drop_unneeded_columns()
     # Write it to a csv file for safekeeping and easy viewing
@@ -26,6 +27,24 @@ def main() -> None:
 
     weather_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_weather_hartbeespoort.feather")
     images_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
+
+    return weather_df, images_df
+
+
+def main() -> None:
+    weather_df: pd.DataFrame
+    images_df: pd.DataFrame
+
+    if PREPROCESS:
+        result_data: tuple[pd.DataFrame, pd.DataFrame] = gather_data_and_preprocess()
+        weather_df = result_data[0]
+        images_df = result_data[1]
+    else:
+        weather_df = pd.read_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_weather_hartbeespoort.feather")
+        images_df = pd.read_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
+
+    print(weather_df)
+    print(images_df)
 
 
 if __name__ == "__main__":
