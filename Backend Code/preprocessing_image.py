@@ -1,4 +1,5 @@
 import cv2
+import glob
 import datetime
 import numpy as np
 import pandas as pd
@@ -6,27 +7,43 @@ import pandas as pd
 from cv2.typing import MatLike
 from typing import Sequence
 
-
 DEBUG: bool = False
-TEST_IMAGE: str = "training_data/Sentinel2/20230116_Sentinel2_Hartbeespoort.png"
 KERNEL_SIZE: int = 3
 EROSION_DILATION_ITR: int = 1
 LARGEST_BLOBS_TRACKED: int = 3
 
 
-def main() -> None:
+def get_all_images_in_folder(folder_path: str, filter_bad_out: bool) -> list[str]:
+    # Get all image paths from the folder
+    images: list[str] = glob.glob(f"{folder_path}/*.png")
+    # Sort them, which sorts them by date due to the naming
+    images.sort()
+
+    if filter_bad_out:
+        # Filter all images that have the letter 'X'
+        # This marking shows that they have clouds and thus are unusable
+        good_images: list[str] = []
+        for image in images:
+            if image.find('X') == -1:
+                good_images.append(image)
+        return good_images
+    else:
+        return images
+
+
+def convert_image_to_dataframe_row(image_path: str) -> pd.DataFrame:
     # Read the image from the file
-    image: MatLike = cv2.imread(TEST_IMAGE)
+    image: MatLike = cv2.imread(image_path)
 
     if DEBUG:  # Display the image
-        cv2.imshow(f"{TEST_IMAGE} - Full Res", image)
+        cv2.imshow(f"{image_path} - Full Res", image)
         cv2.waitKey(0)
 
     # Blurring the image to try reduce noise
     smoothed_image: MatLike = cv2.GaussianBlur(image, (KERNEL_SIZE, KERNEL_SIZE), 0)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Smoothed", smoothed_image)
+        cv2.imshow(f"{image_path} - Smoothed", smoothed_image)
         cv2.waitKey(0)
 
     # Detecting and green of the lake
@@ -51,7 +68,7 @@ def main() -> None:
     mask_green: MatLike = cv2.inRange(hsv_image, lower_green, upper_green)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Green Mask", mask_green)
+        cv2.imshow(f"{image_path} - Green Mask", mask_green)
         cv2.waitKey(0)
 
     # Eroding and dilating the image to clear noise
@@ -65,7 +82,7 @@ def main() -> None:
         iterations=EROSION_DILATION_ITR)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", noise_cleared_image)
+        cv2.imshow(f"{image_path} - Erosion & Dilation ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", noise_cleared_image)
         cv2.waitKey(0)
 
     # Dilating and eroding to fill gaps
@@ -79,7 +96,7 @@ def main() -> None:
         iterations=EROSION_DILATION_ITR)
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
+        cv2.imshow(f"{image_path} - Dilation & Erosion ({EROSION_DILATION_ITR} times, Kernel size: {KERNEL_SIZE})", gap_filled_image)
         cv2.waitKey(0)
 
     # Detecting the contours of the shapes in the image
@@ -116,14 +133,14 @@ def main() -> None:
         i += 1
 
     if DEBUG:
-        cv2.imshow(f"{TEST_IMAGE} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
+        cv2.imshow(f"{image_path} Original Image - {LARGEST_BLOBS_TRACKED} Largest Contours Drawn", image)
         cv2.waitKey(0)
 
     # Creating a new dataframe where all ellipses are in a single record
     single_row_df: pd.DataFrame = pd.DataFrame()
 
     # Separating the date-time from the image name
-    date_string: str = TEST_IMAGE.split('/')[2].split('_')[0]
+    date_string: str = image_path.split('/')[3].split('_')[0]
     date_object: datetime.date = datetime.datetime.strptime(date_string, "%Y%m%d").date()
     single_row_df.insert(0, "datetime", [date_object], True)
 
@@ -141,8 +158,5 @@ def main() -> None:
             new_column_index += 1
         record_index += 1
 
-    single_row_df.to_csv("training_data/processed_data/preprocessed_image_test.csv", index=False)
-
-
-if __name__ == "__main__":
-    main()
+    # single_row_df.to_csv("training_data/processed_data/preprocessed_image_test.csv", index=False)
+    return single_row_df

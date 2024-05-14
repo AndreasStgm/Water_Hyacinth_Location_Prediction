@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def drop_unneeded_columns() -> None:
+def drop_unneeded_columns() -> pd.DataFrame:
     weather_raw: pd.DataFrame = pd.read_csv("./training_data/weather_hartbeespoort_raw.csv")
 
     # Dropping unneeded columns
@@ -10,5 +10,4 @@ def drop_unneeded_columns() -> None:
                                     "visibility", "solarradiation", "solarenergy", "uvindex", "severerisk", "sunrise", "sunset", "moonphase",
                                     "conditions", "description", "icon", "stations"], axis=1)
 
-    weather_raw.to_csv("./training_data/processed_data/preprocessed_weather_hartbeespoort.csv", index=False)
-    weather_raw.to_feather("./training_data/processed_data/preprocessed_weather_hartbeespoort.feather")
+    return weather_raw
