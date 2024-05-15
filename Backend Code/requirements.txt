@@ -1,4 +1,5 @@
 opencv-python
+sktime
 numpy
 pandas
 pyarrow

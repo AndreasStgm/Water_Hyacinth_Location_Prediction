@@ -142,7 +142,7 @@ def convert_image_to_dataframe_row(image_path: str) -> pd.DataFrame:
     # Separating the date-time from the image name
     date_string: str = image_path.split('/')[3].split('_')[0]
     date_object: datetime.date = datetime.datetime.strptime(date_string, "%Y%m%d").date()
-    single_row_df.insert(0, "datetime", [date_object], True)
+    single_row_df.insert(0, "datetime", [str(date_object)], True)
 
     # This should be done better, preferably during the assignment of the ellipse to the resulting_ellipses dataframe
     # so this can be avoided and we don't iterate over stuff too often
