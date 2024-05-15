@@ -37,6 +37,10 @@ def gather_data_and_preprocess() -> tuple[pd.DataFrame, pd.DataFrame]:
         if item[0] in images_df["datetime"].values:
             filtered_weather_df.loc[len(filtered_weather_df.index)] = item
 
+    # Set the date of the row as the index
+    filtered_weather_df.set_index(["datetime"], inplace=True)
+    images_df.set_index(["datetime"], inplace=True)
+
     filtered_weather_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_weather_hartbeespoort.feather")
     images_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
 
@@ -55,8 +59,8 @@ def main() -> None:
         weather_df = pd.read_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_weather_hartbeespoort.feather")
         images_df = pd.read_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
 
-    print(len(weather_df))
-    print(len(images_df))
+    print(weather_df)
+    print(images_df)
 
 
 if __name__ == "__main__":

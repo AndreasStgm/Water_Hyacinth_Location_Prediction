@@ -158,5 +158,4 @@ def convert_image_to_dataframe_row(image_path: str) -> pd.DataFrame:
             new_column_index += 1
         record_index += 1
 
-    # single_row_df.to_csv("training_data/processed_data/preprocessed_image_test.csv", index=False)
     return single_row_df
