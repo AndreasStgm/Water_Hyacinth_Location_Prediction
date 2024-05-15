@@ -1,5 +1,8 @@
 opencv-python
-sktime
 numpy
 pandas
 pyarrow
+scikit-learn
+sktime
+prophet
+neuralforecast
