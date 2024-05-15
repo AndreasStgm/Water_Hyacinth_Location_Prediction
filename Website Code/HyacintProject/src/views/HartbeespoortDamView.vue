@@ -5,21 +5,15 @@
     </article>
     <article class="right">
       <section class="buttonsTop">
-      <p>
         <button>
           <RouterLink to="/hartbeespoortDam" class="routerLink">TODAY</RouterLink>
         </button>
-      </p>
-      <p>
         <button class="dayButtons">
           <RouterLink to="/hartbeespoortDam" class="routerLink">+1 DAY</RouterLink>
         </button>
-      </p>
-      <p>
         <button class="dayButtons">
           <RouterLink to="/hartbeespoortDam" class="routerLink">+2 DAYS</RouterLink>
         </button>
-      </p>
         <p class="date">{{ formatDate(myDate) }}</p>
       </section>
     </article>
@@ -77,7 +71,7 @@ export default {
 
 .right {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: flex-end;
   flex: 1;
   margin-left: 15px;
@@ -88,6 +82,7 @@ export default {
   margin-left: 10px;
   padding: 10px 0;
 }
+
 
 .buttonsTop button {
   padding: 10px 20px;
@@ -124,18 +119,25 @@ export default {
 a {
   text-decoration: none;
   color: white;
-  font-family:Arial, Helvetica, sans-serif;
-}
-
-button {
-  text-decoration: none;
-  color: white;
-  font-family:Arial, Helvetica, sans-serif;
-  text-shadow: -1px -1px 0 #979e4e, 1px -1px 0 #979e4e, -1px 1px 0 #979e4e, 1px 1px 0 #979e4e;
 }
 
 .map-iframe {
   outline-style: solid;
 }
+
+@media (max-width: 830px) {
+  .right{
+    justify-content: flex-start;
+  }
+  .buttonsTop {
+    flex: 0;
+  }
+
+  .date {
+    align-self: end;
+    margin-left: 0;
+  }
+}
+
 
 </style>
