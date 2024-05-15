@@ -4,15 +4,15 @@
       <img src="../assets/logoCBC.jpg" alt="CBC logo"/>
     </article>
     <article class="right">
-      <section class="buttonsTop">
+      <section class="buttons-top">
         <button>
-          <RouterLink to="/hartbeespoortDam" class="routerLink">TODAY</RouterLink>
+          <router-link to="/hartbeespoortDam" class="router-link">TODAY</router-link>
         </button>
-        <button class="dayButtons">
-          <RouterLink to="/hartbeespoortDam" class="routerLink">+1 DAY</RouterLink>
+        <button class="day-buttons">
+          <router-link to="/hartbeespoortDam" class="router-link">+1 DAY</router-link>
         </button>
-        <button class="dayButtons">
-          <RouterLink to="/hartbeespoortDam" class="routerLink">+2 DAYS</RouterLink>
+        <button class="day-buttons">
+          <router-link to="/hartbeespoortDam" class="router-link">+2 DAYS</router-link>
         </button>
         <p class="date">{{ formatDate(myDate) }}</p>
       </section>
@@ -20,9 +20,8 @@
   </section>
 
   <section class="under">
-    <iframe class="map-iframe" style="border:0" loading="lazy" allowfullscreen
-            src="https://www.google.com/maps/embed/v1/view?zoom=14&center=-25.7500,27.8533&key=AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo"></iframe>
-    <p id="accuracy">Accuracy: {{ getAccuracy() }}% </p>
+    <div id="map" class="map"></div>
+    <p id="accuracy">Accuracy: {{ accuracy }}% </p>
     <button @click="$router.go(-1)">Back</button>
   </section>
 </template>
@@ -32,7 +31,7 @@ export default {
   data() {
     return {
       myDate: new Date(),
-      accuracy: null,
+      accuracy: 88,
     };
   },
   methods: {
@@ -42,13 +41,55 @@ export default {
       let year = date.getFullYear();
       return `${day}/${month}/${year}`;
     },
-    getAccuracy() {
-      this.accuracy = 88;
-      return this.accuracy;
-    }
-  }
-};
+    initMap() {
+      const apiKey = 'AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo';
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initMapCallback`;
+      script.async = true;
+      document.head.appendChild(script);
 
+      window.initMapCallback = () => {
+        const map = new google.maps.Map(document.getElementById('map'), {
+          scrollwheel: true,
+          mapTypeControl: false,
+          center: {lat: -25.7500, lng: 27.8533},
+          zoom: 14,
+          streetViewControl: false,
+          zoomControl: true,
+        });
+
+        const center = {lat: -25.7500, lng: 27.8533}; // lat = up/down and lng = left/right
+        const semiMajorAxis = 0.003; // Adjust for desired width of the ellipse
+        const semiMinorAxis = 0.006; // Adjust for desired height of the ellipse
+        const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360);
+
+        new google.maps.Polygon({
+          paths: points,
+          strokeColor: "#FF0000",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          map: map
+        });
+      };
+    },
+    generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, numPoints) {
+      const points = [];
+      const angleStep = (2 * Math.PI) / numPoints;
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = i * angleStep;
+        const lat = center.lat + (semiMajorAxis * Math.cos(angle));
+        const lng = center.lng + (semiMinorAxis * Math.sin(angle));
+        points.push({lat, lng});
+      }
+      return points;
+
+    },
+  },
+  mounted() {
+    this.initMap();
+  },
+};
 </script>
 
 <style scoped>
@@ -83,8 +124,7 @@ export default {
   padding: 10px 0;
 }
 
-
-.buttonsTop button {
+.buttons-top button {
   padding: 10px 20px;
   margin: 3px 5px;
   width: 100px;
@@ -96,7 +136,7 @@ export default {
   margin: 10px auto;
 }
 
-.map-iframe {
+.map {
   display: block;
   width: 100%;
   height: 70vh;
@@ -121,15 +161,16 @@ a {
   color: white;
 }
 
-.map-iframe {
+.map {
   outline-style: solid;
 }
 
 @media (max-width: 830px) {
-  .right{
+  .right {
     justify-content: flex-start;
   }
-  .buttonsTop {
+
+  .buttons-top {
     flex: 0;
   }
 
@@ -138,6 +179,4 @@ a {
     margin-left: 0;
   }
 }
-
-
 </style>
