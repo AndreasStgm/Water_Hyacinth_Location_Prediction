@@ -1,6 +1,7 @@
 import preprocessing_weather as preproc_wthr
 import preprocessing_image as preproc_img
 
+import argparse
 import pandas as pd
 
 PATH_TO_IMAGES: str = "./training_data/Sentinel2"
@@ -48,6 +49,13 @@ def gather_data_and_preprocess() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def main() -> None:
+    # https://docs.python.org/3/library/argparse.html
+    parser = argparse.ArgumentParser(description="Preprocess and predict location of Water Hyacinth on Hartbeespoort dam.")
+    parser.add_argument("-p", "--preprocess", action="store_true")
+
+    args: argparse.Namespace = parser.parse_args()
+    PREPROCESS: bool = args.preprocess
+
     weather_df: pd.DataFrame
     images_df: pd.DataFrame
 

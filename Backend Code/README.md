@@ -15,3 +15,17 @@ All required pip dependencies can be installed at once with the following comman
 ```bash
 pip install -r requirements.txt
 ```
+
+# Starting the application
+
+Please make sure that beforehand the preprocessing is done or you start the program with option `--preprocess`. Preprocessing must only be done once or after constants have been changed in the program to run it again.
+
+```bash
+python3 main.py --preprocess
+```
+
+For normal operation:
+
+```bash
+python3 main.py
+```
