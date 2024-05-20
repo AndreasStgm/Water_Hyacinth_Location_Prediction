@@ -24,7 +24,7 @@ def gather_data_and_preprocess() -> tuple[pd.DataFrame, pd.DataFrame]:
     for i in range(1, len(images)):
         images_df = pd.concat([images_df, preproc_img.convert_image_to_dataframe_row(images[i])])
     # Write it to a csv file for safekeeping and easy viewing
-    images_df.to_csv(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.csv", index=False)
+    images_df.to_csv(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_hartbeespoort.csv", index=False)
 
     # Dropping rows in the weather data that are before the first and after the last image
     weather_df.drop(weather_df[weather_df["datetime"] < images_df["datetime"].min()].index, inplace=True)
@@ -43,7 +43,7 @@ def gather_data_and_preprocess() -> tuple[pd.DataFrame, pd.DataFrame]:
     images_df.set_index(["datetime"], inplace=True)
 
     filtered_weather_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_weather_hartbeespoort.feather")
-    images_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
+    images_df.to_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_hartbeespoort.feather")
 
     return filtered_weather_df, images_df
 
