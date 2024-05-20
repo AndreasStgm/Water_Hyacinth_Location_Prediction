@@ -6,3 +6,6 @@ Satellite images are from the Sentinel-2 (optical) and Sentinel-1 (radar) satell
 Ideally we would like to have API access to their macrophyte monitoring tools to seamlessly integrate it
 
 For now all files have a set structure for their naming: "DATE_SATTELITE_LOCATION.png". The additional "X" at the end is to indicate that the weather was cloudy and the optical images are not useful because the hyacinth could not be located.
+
+The weather data is gathered from:
+https://www.visualcrossing.com/weather-api
