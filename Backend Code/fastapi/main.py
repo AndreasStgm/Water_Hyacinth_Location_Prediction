@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import pickle
 from numpy import ndarray
 from pandas import DataFrame
+from sklearn.linear_model import LinearRegression
 
 
 class Weather(BaseModel):  # Model for input data
@@ -26,7 +27,7 @@ app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=['*'], allow_headers=['*'])
 
 # Loading in the model from the preprocessing
-prediction_model = pickle.load(open("model.pkl", "rb"))
+prediction_model: LinearRegression = pickle.load(open("model.pkl", "rb"))
 
 
 @app.get("/predict", response_model=list[Location], status_code=status.HTTP_200_OK)
