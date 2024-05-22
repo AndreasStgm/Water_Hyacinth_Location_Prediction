@@ -62,15 +62,16 @@ export default {
         //coordinate top right corner training data : -25.720778, 27.907111
         //coordinate bottom right corner training data : -25.780000, 27.907111
 
-        const image_x = 780.7048212227833;
-        const image_y = 248.49263452288508;
-        const image_height = 142.73127865930812;
-        const image_width = 313.9257860234011;
+        const image_x = 757.4011593640796;
+        const image_y = 275.9369515626647;
+        const image_height = 143.02009442334906;
+        const image_width = 309.5101140468501;
+        const angle = 104.67786092704013;
 
         const center = {lat: this.getX(image_y), lng: this.getY(image_x)};
         const semiMajorAxis = this.getEllipseWidth(image_height);
         const semiMinorAxis = this.getEllipseHeight(image_width);
-        const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360);
+        const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360, angle);
 
         new google.maps.Polygon({
           paths: points,
@@ -81,15 +82,23 @@ export default {
         });
       };
     },
-    generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, numPoints) {
+    generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, numPoints, angle) {
       const points = [];
       const angleStep = (2 * Math.PI) / numPoints;
+      const tiltAngle = angle * (Math.PI / 180);
 
       for (let i = 0; i < numPoints; i++) {
         const angle = i * angleStep;
-        const lat = center.lat + (semiMajorAxis * Math.cos(angle));
-        const lng = center.lng + (semiMinorAxis * Math.sin(angle));
-        points.push({lat, lng});
+        const x = semiMajorAxis * Math.cos(angle);
+        const y = semiMinorAxis * Math.sin(angle);
+
+        // Apply the rotation
+        const rotatedX = x * Math.cos(tiltAngle) - y * Math.sin(tiltAngle);
+        const rotatedY = x * Math.sin(tiltAngle) + y * Math.cos(tiltAngle);
+
+        const lat = center.lat + rotatedX;
+        const lng = center.lng + rotatedY;
+        points.push({ lat, lng });
       }
       return points;
     },
