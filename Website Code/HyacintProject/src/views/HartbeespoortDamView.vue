@@ -58,6 +58,9 @@ export default {
           zoomControl: true,
         });
         //coordinate top left corner training data : -25.720774, 27.784343
+        //coordinate bottom left corner training data : -25.780000, 27.784343
+        //coordinate top right corner training data : -25.720778, 27.907111
+        //coordinate bottom right corner training data : -25.780000, 27.907111
 
         const center = {lat: -25.7500, lng: 27.8533}; // lat = up/down and lng = left/right
         const semiMajorAxis = 0.003; // Adjust for desired width of the ellipse
