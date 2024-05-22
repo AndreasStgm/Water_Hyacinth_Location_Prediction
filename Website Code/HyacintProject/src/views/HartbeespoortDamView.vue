@@ -32,6 +32,31 @@ export default {
     return {
       myDate: new Date(),
       accuracy: 88,
+      ellipseColors: ["#FF0000", "#00FF00", "#0000FF"],
+      //needs to be a fetch/axios
+      ellipses: [
+        {
+          "center_x": 757.4011593640796,
+          "center_y": 275.9369515626647,
+          "x_axis_length": 143.02009442334906,
+          "y_axis_length": 309.5101140468501,
+          "angle": 104.67786092704013
+        },
+        {
+          "center_x": 767.8516224513011,
+          "center_y": 368.0977904005568,
+          "x_axis_length": 32.367357376641635,
+          "y_axis_length": 63.5976247995742,
+          "angle": 102.68584371568285
+        },
+        {
+          "center_x": 784.3245172725781,
+          "center_y": 381.2209580495952,
+          "x_axis_length": 15.78464837881021,
+          "y_axis_length": 40.12109110397098,
+          "angle": 104.75481662216997
+        }
+      ]
     };
   },
   methods: {
@@ -62,23 +87,23 @@ export default {
         //coordinate top right corner training data : -25.720778, 27.907111
         //coordinate bottom right corner training data : -25.780000, 27.907111
 
-        const image_x = 757.4011593640796;
-        const image_y = 275.9369515626647;
-        const image_height = 143.02009442334906;
-        const image_width = 309.5101140468501;
-        const angle = 104.67786092704013;
+        this.ellipses.forEach((ellipse, index) => {
+          const center = {lat: this.getX(ellipse.center_y), lng: this.getY(ellipse.center_x)};
+          const semiMajorAxis = this.getEllipseWidth(ellipse.y_axis_length);
+          const semiMinorAxis = this.getEllipseHeight(ellipse.x_axis_length);
+          const angle = ellipse.angle;
+          const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360, angle);
 
-        const center = {lat: this.getX(image_y), lng: this.getY(image_x)};
-        const semiMajorAxis = this.getEllipseWidth(image_height);
-        const semiMinorAxis = this.getEllipseHeight(image_width);
-        const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360, angle);
+          const color = this.ellipseColors[index % this.ellipseColors.length]; // Get color based on index
 
-        new google.maps.Polygon({
-          paths: points,
-          strokeColor: "#FF0000",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          map: map
+          new google.maps.Polygon({
+            paths: points,
+            strokeColor: color,
+            fillColor: color,
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            map: map
+          });
         });
       };
     },
