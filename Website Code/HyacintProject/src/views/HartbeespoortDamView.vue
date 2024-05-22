@@ -1,7 +1,7 @@
 <template>
   <section class="top">
     <article class="left">
-      <img src="../assets/logoCBC.jpg" alt="CBC logo"/>
+      <img src="../../public/images/logoCBC.jpg" alt="CBC logo"/>
     </article>
     <article class="right">
       <section class="buttons-top">
@@ -57,6 +57,7 @@ export default {
           streetViewControl: false,
           zoomControl: true,
         });
+        //coordinate top left corner training data : -25.720774, 27.784343
 
         const center = {lat: -25.7500, lng: 27.8533}; // lat = up/down and lng = left/right
         const semiMajorAxis = 0.003; // Adjust for desired width of the ellipse
@@ -121,7 +122,6 @@ export default {
 .date {
   float: right;
   margin-left: 10px;
-  padding: 10px 0;
 }
 
 .buttons-top button {
@@ -165,7 +165,7 @@ a {
   outline-style: solid;
 }
 
-@media (max-width: 830px) {
+@media (max-width: 845px) {
   .right {
     justify-content: flex-start;
   }

@@ -4,7 +4,7 @@
 <template>
   <main>
     <h1>Water Hyacinth location BY Centre for Biological Control</h1>
-    <img src="../assets/logoCBC.jpg" alt="CBC logo"/>
+    <img src="../../public/images/logoCBC.jpg" alt="CBC logo"/>
     <article id="buttons">
       <button>
         <RouterLink to="/hartbeespoortDam">Hartbeespoort Dam</RouterLink>
