@@ -32,6 +32,12 @@ export default {
     return {
       myDate: new Date(),
       accuracy: 88,
+
+      google_height: 25.780000 - 25.720774,
+      google_width: 27.907111 - 27.784343,
+      picture_width: 1400,
+      picture_height: 700,
+
       ellipseColors: ["#FF0000", "#00FF00", "#0000FF"],
       //needs to be a fetch/axios
       ellipses: [
@@ -117,13 +123,12 @@ export default {
         const x = semiMajorAxis * Math.cos(angle);
         const y = semiMinorAxis * Math.sin(angle);
 
-        // Apply the rotation
         const rotatedX = x * Math.cos(tiltAngle) - y * Math.sin(tiltAngle);
         const rotatedY = x * Math.sin(tiltAngle) + y * Math.cos(tiltAngle);
 
         const lat = center.lat + rotatedX;
         const lng = center.lng + rotatedY;
-        points.push({ lat, lng });
+        points.push({lat, lng});
       }
       return points;
     },
@@ -142,14 +147,10 @@ export default {
       return image_width * this.getWidthStep();
     },
     getWidthStep() {
-      const google_width = 27.907111 - 27.784343;
-      const picture_width = 1400;
-      return google_width / picture_width;  //0.00008769
+      return this.google_width / this.picture_width;  //0.00008769
     },
     getHeightStep() {
-      const google_height = 25.780000 - 25.720774;
-      const picture_height = 700;
-      return google_height / picture_height; //0.00008461
+      return this.google_height / this.picture_height; //0.00008461
     }
   },
   mounted() {
