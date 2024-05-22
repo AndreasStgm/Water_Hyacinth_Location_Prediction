@@ -62,9 +62,14 @@ export default {
         //coordinate top right corner training data : -25.720778, 27.907111
         //coordinate bottom right corner training data : -25.780000, 27.907111
 
-        const center = {lat: -25.7500, lng: 27.8533}; // lat = up/down and lng = left/right
-        const semiMajorAxis = 0.003; // Adjust for desired width of the ellipse
-        const semiMinorAxis = 0.006; // Adjust for desired height of the ellipse
+        const image_x = 780.7048212227833;
+        const image_y = 248.49263452288508;
+        const image_height = 142.73127865930812;
+        const image_width = 313.9257860234011;
+
+        const center = {lat: this.getX(image_y), lng: this.getY(image_x)};
+        const semiMajorAxis = this.getEllipseWidth(image_height);
+        const semiMinorAxis = this.getEllipseHeight(image_width);
         const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360);
 
         new google.maps.Polygon({
@@ -87,8 +92,31 @@ export default {
         points.push({lat, lng});
       }
       return points;
-
     },
+    getX(image_y) {
+      const google_x = -25.720774;
+      return google_x - image_y * this.getHeightStep();
+    },
+    getY(image_x) {
+      const google_y = 27.784343;
+      return google_y + image_x * this.getWidthStep();
+    },
+    getEllipseWidth(image_height) {
+      return image_height * this.getHeightStep();
+    },
+    getEllipseHeight(image_width) {
+      return image_width * this.getWidthStep();
+    },
+    getWidthStep() {
+      const google_width = 27.907111 - 27.784343;
+      const picture_width = 1400;
+      return google_width / picture_width;  //0.00008769
+    },
+    getHeightStep() {
+      const google_height = 25.780000 - 25.720774;
+      const picture_height = 700;
+      return google_height / picture_height; //0.00008461
+    }
   },
   mounted() {
     this.initMap();
