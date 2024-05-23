@@ -6,13 +6,13 @@
     <article class="right">
       <section class="buttons-top">
         <button>
-          <router-link to="/hartbeespoortDam" class="router-link">TODAY</router-link>
+          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(1)">TODAY</router-link>
         </button>
         <button class="day-buttons">
-          <router-link to="/hartbeespoortDam" class="router-link">+1 DAY</router-link>
+          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(2)">+1 DAY</router-link>
         </button>
         <button class="day-buttons">
-          <router-link to="/hartbeespoortDam" class="router-link">+2 DAYS</router-link>
+          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(3)">+2 DAYS</router-link>
         </button>
         <p class="date">{{ formatDate(myDate) }}</p>
       </section>
@@ -21,48 +21,30 @@
 
   <section class="under">
     <div id="map" class="map"></div>
-    <p id="accuracy">Accuracy: {{ accuracy }}% </p>
     <button @click="$router.go(-1)">Back</button>
   </section>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   data() {
     return {
       myDate: new Date(),
-      accuracy: 88,
 
       google_height: 25.780000 - 25.720774,
       google_width: 27.907111 - 27.784343,
       picture_width: 1400,
       picture_height: 700,
 
+      googleMap: null,
+      windspeed: null,
+      winddir: null,
+
       ellipseColors: ["#FF0000", "#00FF00", "#0000FF"],
-      //needs to be a fetch/axios
-      ellipses: [
-        {
-          "center_x": 757.4011593640796,
-          "center_y": 275.9369515626647,
-          "x_axis_length": 143.02009442334906,
-          "y_axis_length": 309.5101140468501,
-          "angle": 104.67786092704013
-        },
-        {
-          "center_x": 767.8516224513011,
-          "center_y": 368.0977904005568,
-          "x_axis_length": 32.367357376641635,
-          "y_axis_length": 63.5976247995742,
-          "angle": 102.68584371568285
-        },
-        {
-          "center_x": 784.3245172725781,
-          "center_y": 381.2209580495952,
-          "x_axis_length": 15.78464837881021,
-          "y_axis_length": 40.12109110397098,
-          "angle": 104.75481662216997
-        }
-      ]
+      aiEllipses: [],
+      drawnEllipses: []
     };
   },
   methods: {
@@ -71,66 +53,6 @@ export default {
       let month = (date.getMonth() + 1).toString().padStart(2, '0');
       let year = date.getFullYear();
       return `${day}/${month}/${year}`;
-    },
-    initMap() {
-      const apiKey = 'AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo';
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initMapCallback`;
-      script.async = true;
-      document.head.appendChild(script);
-
-      window.initMapCallback = () => {
-        const map = new google.maps.Map(document.getElementById('map'), {
-          scrollwheel: true,
-          mapTypeControl: false,
-          center: {lat: -25.7500, lng: 27.8533},
-          zoom: 14,
-          streetViewControl: false,
-          zoomControl: true,
-        });
-        //coordinate top left corner training data : -25.720774, 27.784343
-        //coordinate bottom left corner training data : -25.780000, 27.784343
-        //coordinate top right corner training data : -25.720778, 27.907111
-        //coordinate bottom right corner training data : -25.780000, 27.907111
-
-        this.ellipses.forEach((ellipse, index) => {
-          const center = {lat: this.getX(ellipse.center_y), lng: this.getY(ellipse.center_x)};
-          const semiMajorAxis = this.getEllipseWidth(ellipse.y_axis_length);
-          const semiMinorAxis = this.getEllipseHeight(ellipse.x_axis_length);
-          const angle = ellipse.angle;
-          const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360, angle);
-
-          const color = this.ellipseColors[index % this.ellipseColors.length]; // Get color based on index
-
-          new google.maps.Polygon({
-            paths: points,
-            strokeColor: color,
-            fillColor: color,
-            strokeOpacity: 0.8,
-            strokeWeight: 2,
-            map: map
-          });
-        });
-      };
-    },
-    generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, numPoints, angle) {
-      const points = [];
-      const angleStep = (2 * Math.PI) / numPoints;
-      const tiltAngle = angle * (Math.PI / 180);
-
-      for (let i = 0; i < numPoints; i++) {
-        const angle = i * angleStep;
-        const x = semiMajorAxis * Math.cos(angle);
-        const y = semiMinorAxis * Math.sin(angle);
-
-        const rotatedX = x * Math.cos(tiltAngle) - y * Math.sin(tiltAngle);
-        const rotatedY = x * Math.sin(tiltAngle) + y * Math.cos(tiltAngle);
-
-        const lat = center.lat + rotatedX;
-        const lng = center.lng + rotatedY;
-        points.push({lat, lng});
-      }
-      return points;
     },
     getX(image_y) {
       const google_x = -25.720774;
@@ -151,12 +73,104 @@ export default {
     },
     getHeightStep() {
       return this.google_height / this.picture_height; //0.00008461
+    },
+     async initMap() {
+      const apiKey = 'AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo';
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initMapCallback`;
+      script.async = true;
+      document.head.appendChild(script);
+
+      window.initMapCallback = () => {
+        this.googleMap = new google.maps.Map(document.getElementById('map'), {
+          scrollwheel: true,
+          mapTypeControl: false,
+          center: {lat: -25.7500, lng: 27.8533},
+          zoom: 14,
+          streetViewControl: false,
+          zoomControl: true,
+        });
+      };
+    },
+    async drawGoogle(day) {
+      try {
+        await this.setWindspeedAndDirection(day);
+        await this.getPrediction();
+        this.removePreviousEllipse();
+        this.drawEllipse();
+        this.setDate(day);
+      } catch (error) {
+        console.error('Error with drawGoogle:', error);
+      }
+    },
+    async setWindspeedAndDirection(day) {
+      const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=-25.7287&longitude=27.87&hourly=wind_speed_10m,wind_direction_10m&forecast_days=${day}`);
+      this.windspeed = weatherResponse.data.hourly.wind_speed_10m[24 * (day - 1)];
+      this.winddir = weatherResponse.data.hourly.wind_direction_10m[24 * (day - 1)];
+    },
+    async getPrediction() {
+      const aiResponse = await axios.post(`http://localhost:8000/predict`, {
+        windspeed: this.windspeed,
+        winddir: this.winddir
+      });
+      this.aiEllipses = aiResponse.data;
+    },
+    removePreviousEllipse() {
+      this.drawnEllipses.forEach(polygon => polygon.setMap(null));
+      this.drawnEllipses = [];
+    },
+    drawEllipse(){
+      this.aiEllipses.forEach((ellipse, index) => {
+        const center = {lat: this.getX(ellipse.center_y), lng: this.getY(ellipse.center_x)};
+        const semiMajorAxis = this.getEllipseWidth(ellipse.y_axis_length);
+        const semiMinorAxis = this.getEllipseHeight(ellipse.x_axis_length);
+        const angle = ellipse.angle;
+        const points = this.generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, 360, angle);
+
+        const color = this.ellipseColors[index % this.ellipseColors.length]; // Get color based on index
+
+        const polygon = new google.maps.Polygon({
+          paths: points,
+          strokeColor: color,
+          fillColor: color,
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          map: this.googleMap
+        });
+        this.drawnEllipses.push(polygon);
+      });
+    },
+    generateEllipsePoints(center, semiMajorAxis, semiMinorAxis, numPoints, angle) {
+      const points = [];
+      const angleStep = (2 * Math.PI) / numPoints;
+      const tiltAngle = angle * (Math.PI / 180);
+
+      for (let i = 0; i < numPoints; i++) {
+        const angle = i * angleStep;
+        const x = semiMajorAxis * Math.cos(angle);
+        const y = semiMinorAxis * Math.sin(angle);
+
+        const rotatedX = x * Math.cos(tiltAngle) - y * Math.sin(tiltAngle);
+        const rotatedY = x * Math.sin(tiltAngle) + y * Math.cos(tiltAngle);
+
+        const lat = center.lat + rotatedX;
+        const lng = center.lng + rotatedY;
+        points.push({lat, lng});
+      }
+      return points;
+    },
+    setDate(day) {
+      let dateToday = new Date();
+      dateToday.setDate(dateToday.getDate() + (day - 1));
+      this.myDate = new Date(dateToday);
     }
   },
-  mounted() {
-    this.initMap();
+  async mounted() {
+    await this.initMap();
+    await this.drawGoogle(1);
   },
-};
+}
+
 </script>
 
 <style scoped>

@@ -30,7 +30,7 @@ app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True
 prediction_model: LinearRegression = pickle.load(open("model.pkl", "rb"))
 
 
-@app.get("/predict", response_model=list[Location], status_code=status.HTTP_200_OK)
+@app.post("/predict", response_model=list[Location], status_code=status.HTTP_200_OK)
 def get_prediction_from_model(input_weather: Weather) -> list[Location]:
     # Loading the input data into a dataframe with the correct labels for the columns
     input_df: DataFrame = DataFrame(columns=["windspeed", "winddir"])
