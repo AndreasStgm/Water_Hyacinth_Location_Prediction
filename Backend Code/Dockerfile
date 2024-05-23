@@ -1,4 +1,4 @@
-FROM python:slim-buster AS build
+FROM python:slim-bookworm AS build
 
 WORKDIR /build_code
 COPY ./training .
@@ -9,7 +9,7 @@ RUN apt update \
     && python3 main.py --preprocess
 
 
-FROM python:slim-bullseye AS deploy
+FROM python:slim-bookworm AS deploy
 
 WORKDIR /deploy_code
 COPY ./fastapi .
