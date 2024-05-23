@@ -42,7 +42,7 @@ export default {
       windspeed: null,
       winddir: null,
 
-      ellipseColors: ["#FF0000", "#00FF00", "#0000FF"],
+      ellipseColors: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FFA500", "#800080"],
       aiEllipses: [],
       drawnEllipses: []
     };
