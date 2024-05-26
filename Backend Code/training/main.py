@@ -5,6 +5,7 @@ import argparse
 import pickle
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 
 PATH_TO_IMAGES: str = "./training_data/Sentinel2"
 PATH_TO_PROCESSED_DATA: str = "./training_data/processed_data"
@@ -70,7 +71,7 @@ def main() -> None:
         images_df = pd.read_feather(f"{PATH_TO_PROCESSED_DATA}/preprocessed_image_test.feather")
 
     # Fitting a regression model to predict the locations
-    prediction_model = LinearRegression()
+    prediction_model = RandomForestRegressor()
     prediction_model.fit(weather_df, images_df)
     # Exporting the model
     pickle.dump(prediction_model, open("./training_data/processed_data/model.pkl", "wb"))
