@@ -21,7 +21,7 @@ class Location(BaseModel):  # Model for output data
     angle: float
 
 
-origins: list[str] = ["http://localhost:5713", "https://localhost:5713"]
+origins: list[str] = ["http://localhost:5173", "http://0.0.0.0:5173", "http://127.0.0.1:5173"]
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=['*'], allow_headers=['*'])

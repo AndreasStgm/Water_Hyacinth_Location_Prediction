@@ -10,4 +10,4 @@ Have Docker installed, then run the following command:
 docker compose up
 ```
 
-The frontend application is hosted on `localhost:5713` and the backend documentation of the API can be found at `localhost:8000/docs`.
+The frontend application is hosted on `localhost:5173` and the backend documentation of the API can be found at `localhost:8000/docs`.
