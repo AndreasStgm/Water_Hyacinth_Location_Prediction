@@ -5,15 +5,9 @@
     </article>
     <article class="right">
       <section class="buttons-top">
-        <button>
-          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(1)">TODAY</router-link>
-        </button>
-        <button class="day-buttons">
-          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(2)">+1 DAY</router-link>
-        </button>
-        <button class="day-buttons">
-          <router-link to="/hartbeespoortDam" class="router-link" @click="drawGoogle(3)">+2 DAYS</router-link>
-        </button>
+        <button @click="drawGoogle(1)">TODAY</button>
+        <button @click="drawGoogle(2)" class="day-buttons">+1 DAY</button>
+        <button @click="drawGoogle(3)" class="day-buttons">+2 DAYS</button>
         <p class="date">{{ formatDate(myDate) }}</p>
       </section>
     </article>
@@ -33,8 +27,17 @@ export default {
     return {
       myDate: new Date(),
 
-      google_height: 25.780000 - 25.720774,
-      google_width: 27.907111 - 27.784343,
+      latitude: null,
+      longitude: null,
+
+      X: null,
+      Y: null,
+      X2: null,
+      Y2: null,
+
+      //Data from snapshot
+      google_height: null,
+      google_width: null,
       picture_width: 1400,
       picture_height: 700,
 
@@ -55,12 +58,10 @@ export default {
       return `${day}/${month}/${year}`;
     },
     getX(image_y) {
-      const google_x = -25.720774;
-      return google_x - image_y * this.getHeightStep();
+      return this.X - image_y * this.getHeightStep();
     },
     getY(image_x) {
-      const google_y = 27.784343;
-      return google_y + image_x * this.getWidthStep();
+      return this.Y + image_x * this.getWidthStep();
     },
     getEllipseWidth(image_height) {
       return image_height * this.getHeightStep();
@@ -69,30 +70,40 @@ export default {
       return image_width * this.getWidthStep();
     },
     getWidthStep() {
-      return this.google_width / this.picture_width;  //0.00008769
+      return this.google_width / this.picture_width;
     },
     getHeightStep() {
-      return this.google_height / this.picture_height; //0.00008461
+      return this.google_height / this.picture_height;
     },
-     async initMap() {
+    async initMap() {
+      console.log('ini');
+      //south east hemisphere
+      this.google_height = this.X2 + this.X;
+      this.google_width = this.Y2 - this.Y;
+
       const apiKey = 'AIzaSyAhgJ0hSYHjGBCwIm1B0G_zHW2vtAcQ6zo';
       const script = document.createElement('script');
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initMapCallback`;
       script.async = true;
-      document.head.appendChild(script);
 
-      window.initMapCallback = () => {
-        this.googleMap = new google.maps.Map(document.getElementById('map'), {
-          scrollwheel: true,
-          mapTypeControl: false,
-          center: {lat: -25.7500, lng: 27.8533},
-          zoom: 14,
-          streetViewControl: false,
-          zoomControl: true,
-        });
-      };
+      if (this.googleMap == null) {
+        // Define initMapCallback function
+        window.initMapCallback = () => {
+          this.googleMap = new google.maps.Map(document.getElementById('map'), {
+            scrollwheel: true,
+            mapTypeControl: false,
+            center: {lat: this.latitude, lng: this.longitude},
+            zoom: 14,
+            streetViewControl: false,
+            zoomControl: true,
+          });
+        };
+        document.head.appendChild(script);
+      }
     },
     async drawGoogle(day) {
+      console.log('draw');
+
       try {
         await this.setWindspeedAndDirection(day);
         await this.getPrediction();
@@ -104,7 +115,7 @@ export default {
       }
     },
     async setWindspeedAndDirection(day) {
-      const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=-25.7287&longitude=27.87&hourly=wind_speed_10m,wind_direction_10m&forecast_days=${day}`);
+      const weatherResponse = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${this.latitude}&longitude=${this.longitude}&hourly=wind_speed_10m,wind_direction_10m&forecast_days=${day}`);
       this.windspeed = weatherResponse.data.hourly.wind_speed_10m[24 * (day - 1)];
       this.winddir = weatherResponse.data.hourly.wind_direction_10m[24 * (day - 1)];
     },
@@ -119,7 +130,7 @@ export default {
       this.drawnEllipses.forEach(polygon => polygon.setMap(null));
       this.drawnEllipses = [];
     },
-    drawEllipse(){
+    drawEllipse() {
       this.aiEllipses.forEach((ellipse, index) => {
         const center = {lat: this.getX(ellipse.center_y), lng: this.getY(ellipse.center_x)};
         const semiMajorAxis = this.getEllipseWidth(ellipse.y_axis_length);
@@ -166,11 +177,20 @@ export default {
     }
   },
   async mounted() {
+    console.log('mount');
+    console.log(this.googleMap);
+
+    this.latitude = parseFloat(this.$route.query.latitude);
+    this.longitude = parseFloat(this.$route.query.longitude);
+    this.X = parseFloat(this.$route.query.X1);
+    this.Y = parseFloat(this.$route.query.Y1);
+    this.X2 = parseFloat(this.$route.query.X2);
+    this.Y2 = parseFloat(this.$route.query.Y2);
+
     await this.initMap();
     await this.drawGoogle(1);
   },
 }
-
 </script>
 
 <style scoped>
