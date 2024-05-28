@@ -11,3 +11,5 @@ docker compose up
 ```
 
 The frontend application is hosted on `localhost:5173` and the backend documentation of the API can be found at `localhost:8000/docs`.
+
+The backend includes two endpoints: one that predicts the amount of ellipses set in the preprocessing with one model, and a second one that only predicts the biggest ellipse but with five seperate models for alle the features independently. The second endpoint exists to hopefully predict the location with a higher accuracy.
