@@ -109,7 +109,7 @@ export default {
       this.winddir = weatherResponse.data.hourly.wind_direction_10m[24 * (day - 1)];
     },
     async getPrediction() {
-      const aiResponse = await axios.post(`http://localhost:8000/predict`, {
+      const aiResponse = await axios.post(`http://localhost:8000/predict/all`, {
         windspeed: this.windspeed,
         winddir: this.winddir
       });

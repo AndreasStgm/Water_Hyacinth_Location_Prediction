@@ -13,7 +13,7 @@ FROM python:slim-bookworm AS deploy
 
 WORKDIR /deploy_code
 COPY ./fastapi .
-COPY --from=build /build_code/training_data/processed_data/model.pkl /deploy_code/model.pkl
+COPY --from=build /build_code/models /deploy_code/models
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
