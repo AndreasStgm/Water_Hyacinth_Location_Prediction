@@ -5,16 +5,29 @@
     </article>
     <article class="right">
       <section class="buttons-top">
-        <button @click="drawGoogle(1)">TODAY</button>
-        <button @click="drawGoogle(2)" class="day-buttons">+1 DAY</button>
-        <button @click="drawGoogle(3)" class="day-buttons">+2 DAYS</button>
-        <p class="date">{{ formatDate(myDate) }}</p>
+        <button @click="drawGoogle(1)" :class="{'day-buttons': true, 'active': activeButton === 1}">{{
+            formatDate(0)
+          }}
+        </button>
+        <button @click="drawGoogle(2)" :class="{'day-buttons': true, 'active': activeButton === 2}">{{
+            formatDate(1)
+          }}
+        </button>
+        <button @click="drawGoogle(3)" :class="{'day-buttons': true, 'active': activeButton === 3}">{{
+            formatDate(2)
+          }}
+        </button>
       </section>
     </article>
   </section>
-
   <section class="under">
     <div id="map" class="map"></div>
+    <section class="toggle-switch">
+      <input type="radio" id="allToggle" v-model="predictionType" value="all">
+      <label for="allToggle" class="toggle-label">All</label>
+      <input type="radio" id="singleToggle" v-model="predictionType" value="single">
+      <label for="singleToggle" class="toggle-label">Single</label>
+    </section>
     <button @click="$router.go(-1)">Back</button>
   </section>
 </template>
@@ -25,8 +38,6 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      myDate: new Date(),
-
       latitude: null,
       longitude: null,
 
@@ -34,6 +45,8 @@ export default {
       Y: null,
       X2: null,
       Y2: null,
+
+      predictionType: 'all',
 
       //Data from snapshot
       google_height: null,
@@ -45,13 +58,18 @@ export default {
       windspeed: null,
       winddir: null,
 
+      day: 1,
+      activeButton: 1,
+
       ellipseColors: ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FFA500", "#800080"],
       aiEllipses: [],
       drawnEllipses: []
     };
   },
   methods: {
-    formatDate(date) {
+    formatDate(plusDays) {
+      let date = new Date();
+      date.setDate(date.getDate() + plusDays);
       let day = date.getDate().toString().padStart(2, '0');
       let month = (date.getMonth() + 1).toString().padStart(2, '0');
       let year = date.getFullYear();
@@ -76,7 +94,6 @@ export default {
       return this.google_height / this.picture_height;
     },
     async initMap() {
-      console.log('ini');
       //south east hemisphere
       this.google_height = this.X2 + this.X;
       this.google_width = this.Y2 - this.Y;
@@ -86,25 +103,22 @@ export default {
       script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=visualization&callback=initMapCallback`;
       script.async = true;
 
-      if (this.googleMap == null) {
-        // Define initMapCallback function
-        window.initMapCallback = () => {
-          this.googleMap = new google.maps.Map(document.getElementById('map'), {
-            scrollwheel: true,
-            mapTypeControl: false,
-            center: {lat: this.latitude, lng: this.longitude},
-            zoom: 14,
-            streetViewControl: false,
-            zoomControl: true,
-          });
-        };
-        document.head.appendChild(script);
-      }
+      window.initMapCallback = () => {
+        this.googleMap = new google.maps.Map(document.getElementById('map'), {
+          scrollwheel: true,
+          mapTypeControl: false,
+          center: {lat: this.latitude, lng: this.longitude},
+          zoom: 14,
+          streetViewControl: false,
+          zoomControl: true,
+        });
+      };
+      document.head.appendChild(script);
     },
     async drawGoogle(day) {
-      console.log('draw');
-
       try {
+        this.day = day;
+        this.activeButton = day;
         await this.setWindspeedAndDirection(day);
         await this.getPrediction();
         this.removePreviousEllipse();
@@ -120,11 +134,23 @@ export default {
       this.winddir = weatherResponse.data.hourly.wind_direction_10m[24 * (day - 1)];
     },
     async getPrediction() {
-      const aiResponse = await axios.post(`http://localhost:8000/predict/all`, {
-        windspeed: this.windspeed,
-        winddir: this.winddir
-      });
-      this.aiEllipses = aiResponse.data;
+      try {
+        let aiResponse;
+        if (this.predictionType === 'all') {
+          aiResponse = await axios.post(`http://localhost:8000/predict/all`, {
+            windspeed: this.windspeed,
+            winddir: this.winddir
+          });
+        } else {
+          aiResponse = await axios.post(`http://localhost:8000/predict/single`, {
+            windspeed: this.windspeed,
+            winddir: this.winddir
+          });
+        }
+        this.aiEllipses = aiResponse.data;
+      } catch (error) {
+        console.error('Error with getPredictions:', error);
+      }
     },
     removePreviousEllipse() {
       this.drawnEllipses.forEach(polygon => polygon.setMap(null));
@@ -176,10 +202,14 @@ export default {
       this.myDate = new Date(dateToday);
     }
   },
+  watch: {
+    predictionType(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.drawGoogle(this.day);
+      }
+    }
+  },
   async mounted() {
-    console.log('mount');
-    console.log(this.googleMap);
-
     this.latitude = parseFloat(this.$route.query.latitude);
     this.longitude = parseFloat(this.$route.query.longitude);
     this.X = parseFloat(this.$route.query.X1);
@@ -188,12 +218,13 @@ export default {
     this.Y2 = parseFloat(this.$route.query.Y2);
 
     await this.initMap();
-    await this.drawGoogle(1);
+    await this.drawGoogle(this.day);
   },
 }
 </script>
 
 <style scoped>
+
 .top {
   margin: 10px auto;
   width: 80%;
@@ -219,21 +250,31 @@ export default {
   margin-left: 15px;
 }
 
-.date {
-  float: right;
-  margin-left: 10px;
-}
-
 .buttons-top button {
-  padding: 10px 20px;
+  padding: 10px;
   margin: 3px 5px;
   width: 100px;
   background-color: #707330;
+  text-align: center;
+}
+
+
+.buttons-top button.active {
+  background-color: #4d4d20;
 }
 
 .under {
   width: 80%;
   margin: 10px auto;
+}
+
+.toggle-switch {
+  float: right;
+  margin: 5px;
+}
+
+.toggle-label {
+  margin: 5px;
 }
 
 .map {
@@ -272,11 +313,6 @@ a {
 
   .buttons-top {
     flex: 0;
-  }
-
-  .date {
-    align-self: end;
-    margin-left: 0;
   }
 }
 </style>
